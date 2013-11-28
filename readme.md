@@ -28,9 +28,8 @@ this
 	* if the function is called from an object
 		* eg myObj.doThing();
 	* otherwise `this` is bound to global (use strict causing it to bind to undefined)
-* example of a single function being invoked in all ways, thus getting different this values
-* example of using this to compose objects
-* use this as an alternative to passing an argument that basically serves as context
+* example of a single function being invoked in all ways, thus getting different this values [this_1.js]
+* example of using this to compose objects [this_2.js]
 
 put it together
 -----------------
