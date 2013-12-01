@@ -30,7 +30,8 @@ Javascript handles scope by defining a function environment each time a function
 		return a + b;
 	}
 
-	add(10, 4); //=> 14
+	> add(10, 4);
+	< 14
 
 The environment of this function call can be rougly represented as:
 
@@ -66,11 +67,13 @@ This function access a variable, `z` that is not bound inside of it's own enviro
 
 Let's assume `z` is defined *somewhere* and it's value is `10`.
 
-	addZ(10, 4); //=> 24
+	> addZ(10, 4);
+	< 24
 
 But suppose something happens and `z` is changed to "blorgis".
 
-	addZ(10, 4); //=> 14blorgis
+	> addZ(10, 4);
+	< 14blorgis
 
 Wut.
 
@@ -146,8 +149,8 @@ Let's assume Federation.post() is an async function that posts to some REST API 
 
 What output might you expect to see in the console? SSHHHHhhhhh... shhhh. don't answer.
 
-	> postLog execution complete.
-	> log for jkirk was successfully posted to log/jkirk with id 9
+	< postLog execution complete.
+	< log for jkirk was successfully posted to log/jkirk with id 9
 
 What the double backflip. How can `postLog` finish execution *before* it actually posted?!
 
@@ -289,7 +292,21 @@ The function that `bindCredentials()` returns has access to `uri` and `pass`, bu
 
 ---
 
-class: center, middle
+## Recap
+
+#### Pure functions
+* Pure functions have all of their vars bound in the current functions environment
+* Pure functions are portable and easy to test, but not too flexible.
+
+#### Closure functions
+* Accessing a var outside of the current function environment creates a closure
+* Closures are highly flexible and useful, but can be more challenging to use and test
+* A closure's scope is determined by where it is defined, not where it is called.
+* A closure keeps any parent scope it needs access to alive, even when that parent function has closed.
+
+---
+
+class: center, middle, crazyTime
 
 # INTERMISSION
 
@@ -420,7 +437,18 @@ Since `this` can be set on-the-fly, some interesting patterns are possible that 
 
 	<script>
 
-		var slideshow = remark.create();
+		var slideshow = remark.create({
+		  highlightLanguage: 'javascript',
+		  highlightStyle: 'monokai'
+		});
+
+		setInterval(function(){
+			var el = document.querySelector(".crazyTime"),
+				randomColor = "#"+Math.floor(Math.random()*16777215).toString(16);
+			if(el){
+				el.style.backgroundColor = randomColor;
+			}
+		}, 100);
 
 		var Federation = {
 			post: function(uri, pass, data, callback){
