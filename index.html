@@ -1,13 +1,426 @@
 <!DOCTYPE HTML>
 <html lang="en">
 <head>
-	<title></title>
+	<title>JavaScript: It's not OOP</title>
 	<meta charset="utf-8">
+	<style>
+		body { font-size: 1.4em; font-family: arial;}
+		blockquote { margin: 20px; border: solid gray 2px; font-size: .9em; color: #666; }
+		blockquote p { margin: 10px;}
+	</style>
 </head>
 <body>
 
+<textarea id="source">
+
+
+
+class: center, middle
+
+# JavaScript: It's not OOP
+It's programming with objects
+
+---
+
+## Scope ain't so hard, bra.
+
+Javascript handles scope by defining a function environment each time a function is called (Note: function-level, not block-level).
+
+	function add(a, b){
+		return a + b;
+	}
+
+	add(10, 4); //=> 14
+
+The environment of this function call can be rougly represented as:
+
+	{
+		a: 10,
+		b: 4
+	}
+
+**This is a pure function because all of its variables are defined (or bound) inside of the function's environment.**
+
+---
+
+## Pure functions are a beautiful thing.
+
+Keeping everything inside of the function environment has a lot of benefits.
+
+* Guaranteed to always produce the same results, given the same input
+* Easy to test
+* Very portable/reusable
+* Ideal utility functions
+
+However, it's not really reasonable to only write pure functions in javascript, but its a good goal to strive towards!
+
+---
+
+## IMPURE! UNCLEAN!
+
+	function addZ(a, b){
+		return a + b + z;
+	}
+
+This function access a variable, `z` that is not bound inside of it's own environment. Therefore the output of this function is not predictable without knowledge outside of this function's environment.
+
+Let's assume `z` is defined *somewhere* and it's value is `10`.
+
+	addZ(10, 4); //=> 24
+
+But suppose something happens and `z` is changed to "blorgis".
+
+	addZ(10, 4); //=> 14blorgis
+
+Wut.
+
+---
+
+## Kids, go ask your parents first.
+
+Speaking of environment... what does `addZ()`'s look like?
+
+	{
+		__parentEnvironment__: {
+			z: 10
+		}
+		a: 10,
+		b: 4
+	}
+
+The variable `z` isn't in the function environment, so javascript automatically goes up to the en*closing* environment, and looks for `z` there. If it can't find `z` there, it will go to its parent's parent, and so on till it hits the top (`global` in nodejs or `window` in the browser) where it will throw a `Reference Error` if the variable does not exist.
+
+> `__parentEnvironment__` is just the way I am informally defining whichever environment encloses this one.
+
+---
+
+## Oh yeah, closures. Forgot about that.
+
+	function addZ(a, b){
+		return a + b + z;
+	}
+
+The variable `z` is not bound in this function's environment, so it accesses its parent's. It can be said that it *closes over* its parent's scope. **A function in javascript that is not *pure* is effectively a *closure***. However, be aware:
+
+* a closure function can produce different results with the same arguments
+* closure functions can be harder to test
+* closure functions are significantly more flexible
+
+To make a function a closure, simply access a variable outside of its environment. Javascript don't care. In fact javascript will help you out by keeping the parent environment alive, even if the parent function has completed execution.
+
+> Keep in mind, since any function can be a closure, any function can hold onto memory that it may not need. Be careful not to create closures unless you absolutely need to.
+
+---
+
+## Behold, the closure in its natural habitat
+
+Javascript doesn't like syncronous execution. Pretty often javascript is just waiting around for an event to fire or an async operation to complete. Take a looksie here bro:
+
+    function postLog(username, pass, logTxt){
+
+		var uri = "log/" + username;
+
+		var onComplete = function(id){
+			console.log(
+				"log for", username,
+				"was successfully posted to", uri,
+				"with id", id);
+		};
+
+		Federation.post(uri, pass, logTxt, onComplete);
+
+		console.log("postLog execution complete.");
+
+    }
+
+Let's assume Federation.post() is an async function that posts to some REST API or something.
+
+---
+
+## Welcome to the Federation
+
+	// not the nicest interface :/
+	postLog("jkirk", "OhuraOhYes",
+		"Captain's Log, Stardate 1329.8. The USS Enterprise 
+		in pursuit of an unidentified vessel.");
+
+What output might you expect to see in the console? SSHHHHhhhhh... shhhh. don't answer.
+
+	> postLog execution complete.
+	> log for jkirk was successfully posted to log/jkirk with id 9
+
+What the double backflip. How can `postLog` finish execution *before* it actually posted?!
+
+Because *async*, that's why (hoping you guys already know what's up with async vs sync).
+
+---
+
+## So async, so what.
+
+Well here's where I was going with this. `postLog()` was done. gone. finished. closed. ex-parrot. Yet somehow the callback function, `onComplete()`, magically had access to `postLog()`'s `username` and `uri`. But, but, you might say, those vars should have closed along with `postLog()`!
+
+**`onComplete` *closed over* `postLog`'s function environment, thus keeping it alive after execution ended.** `onComplete`'s' environment could be represented like this:
+
+	__onCompleteEnvironment__: {
+		__closured__postLogEnvironment__: {
+			username: "jkirk",
+			pass: "OhuraOhYes",
+			logTxt: "Captain's Log, Star...",
+			uri: "log/jkirk"
+		}
+		id: "12345678"
+	}
+
+It keeps a copy of its enclosing environment, thus it always has access to the variables it needs.
+
+---
+
+## I guess... can you make it more complex please?
+
+Yes. Yes I can.
+
+`postLog()` is not easy to use. It requires a username and password to be included with every call. Let's abstract this mug. We can write a function that accepts a username and password and returns a new function with the username and password prefilled.
+
+	function bindCredentials(type, username, pass){
+
+		var uri = type +"/"+ username;
+
+		return function(logTxt){
+			Federation.post(uri, pass, logTxt, function(id){
+				console.log("log for", username,
+					"was successfully posted to", uri,
+					"with id", id);
+			});
+			console.log("credential bound function execution complete");
+		};
+	}
+
+
+---
+
+## Step 3: Profit!
+
+We use it like this
+
+	var captainsLog = bindCredentials("log", "jkirk", "OhuraOhYes");
+	captainsLog("Captain's log, stardate 9522.6: I've
+		never trusted Klingons, and I never will.");
+
+Now anytime Cap needs to log stuff, he can just call `captainsLog()` and skip all the credentials. And to help unwrap this puzzle a bit, here's what the execution environment looks like:
+
+	__postEnvironment__: {
+		__captainsLog__: {
+			__bindCredentialsEnvironment__: {
+				type: "log",
+				username: "jkirk",
+				pass: "OhuraOhYes",	
+				uri: "log/jkirk"
+			}
+			logTxt: "Captain's log, star..."
+		}
+		id: "..."
+	}
+
+---
+
+## Magic and invocation
+
+When `bindCredentials()` was invoked, it created a new closure with access to `username` and `pass`. Then, `captainsLog()` added `logTxt` to that environment, and finally `post()` added `id`. 
+
+The important bit is this: **No matter where a closure is called, it will have access to the environment where it was defined.**
+
+That's why all of the following invocations of `captainsLog()` work identically:
+
+	captainsLog("Captain's log, additional entry. Since our
+		mission was routine, we had beamed down to the planet
+		without suspicion.");
+
+	captainUtils.captainsLog = captainsLog;
+	captainUtils.captainsLog("Captain's log, Stardate 1513.1.
+		Our position, orbiting planet M-113.");
+
+	captainsLog.call(null, "Captain's log, Stardate 1513.4. One
+		crewman, member of the landing party, dead by violence.");
+
+---
+
+## Exposing Secrets
+
+Closures can be used to access a function's environment from outside of the function:
+
+	var ninjaFunction;
+
+	function kirksSecret(){
+
+		var secret = "Be William Shatner.";
+
+		ninjaFunction = function(){
+			return secret;
+		}
+
+	}
+
+Variable `ninjaFunction` is declared at the global scope in this example, but defined inside of `kirksSecret()`. Since `ninjaFunction()` was defined in an environment with access to `secret`, `ninjaFunction()` can get to the secret.
+
+	kirksSecret(); //=> undefined
+	ninjaFunction(); //=> "Be William Shatner"
+
+---
+
+## Keeping your privates private
+
+Javascript doesn't have the concept of private members built in, but it can be approximated using closures. In fact, we have already done this with `bindCredentials()`.
+
+	function bindCredentials(type, username, pass){
+
+		var uri = type +"/"+ username;
+
+		return function(logTxt){
+			Federation.post(uri, pass, logTxt, function(id){
+				console.log("log for", username,
+					"was successfully posted to", uri,
+					"with id", id);
+			});
+			console.log("credential bound function execution complete");
+		};
+	}
+
+The function that `bindCredentials()` returns has access to `uri` and `pass`, but no other entity can access those values. They are effectively private to the returned function.
+
+---
+
+class: center, middle
+
+# INTERMISSION
+
+---
+
+## Let's talk about `this` ba-by. Let's talk about you-and-me.
+
+Unlike a closure environment, the `this` context is determined by *how* a function is called. Here are the 4 ways `this` is set:
+
+1. when using the `new` keyword
+	* `new doThing();`
+2. via call or apply
+	* `doThing.call(myObj);`
+	* `doThing.apply(myobj);`
+3. when a function is called from an object
+	* `myObj.doThing();`
+4. otherwise `this` is bound to global
+
+Here, take my hand. Let's go over each scenario.
+
+---
+
+## 1. `new` really ain't that fancy.
+
+Javascript, in his younger years, wanted to be cool and *class*y, like his buddy java, so he threw in the `new` keyword. However, javascript don't do classes.
+
+The short 'n simple version is this: all `new` does is make *any* function into a constructor. Among other things, this means that the function automatically creates a new object and binds that new object to the value `this`. After the function executes, it returns the newly created `this` object.
+
+The end result is that it kinda seems like a class that created an instance, but it ain't. Trust me. We can talk about that next time. Just call it a **type** instead of class.
+
+Here, take a look at this function:
+
+	function WhatIsThis(property1){
+		this.property1 = property1;
+		console.log(this);
+	}
+
+---
+
+## 1. `new` continued
+
+As with any function `WhatIsThis()` can be called with `new`:
+
+	> new WhatIsThis("i have no idea");
+	< WhatIsThis {property1: "thing"}
+
+A new empty object was created and bound to `this` in `WhatIsThis()`'s function environment. The environment looks like this:
+
+	__WhatIsThisEnvironment__: {
+		this: {},
+		property1: "i have no idea"
+	}
+
+After the constructor completes execution, it returns the `this` object which now looks like this:
+
+	{
+		property1: "i have no idea",
+		__proto__: WhatIsThis
+	}
+
+---
+
+## 2. `call` and `apply`
+
+There are 3 ways to invoke a function in javascript:
+
+	WhatIsThis();
+	WhatIsThis.call();
+	WhatIsThis.apply();
+
+`call` and `apply` are very similar, so let's look at `call`. The first argument `call` takes sets the `this` value of the function being called. Any subsequent arguments are passed to the calling function as parameters. 
+
+We can pass in any object (including functions) to set as `this`:
+
+	> var whatAboutThis = {
+		  property1: "not it!"
+	  };
+	> WhatIsThis.call(whatAboutThis, "im it!");
+	< WhatIsThis {property1: "im it!"}
+
+Don't be afraid to set `this`! It seems weird, but it's part of javascript's DNA.
+
+---
+
+## 3. Kinda like a method I guess...
+
+Functions can be assigned to objects, which effectively make them methods of that object. In familiar OOP style, calling a method of an object sets `this` to the object that the method belongs to. 
+
+	> var letsTryThis = {
+		  property1: "nothing to see here",
+		  whatIsThis: whatIsThis
+	  };
+	> letsTryThis.WhatIsThis("SOMETHING TO SEE HERE!");
+	< WhatIsThis {property1: "SOMETHING TO SEE HERE!"}
+
+This should be the most familiar to devs coming from other languages. 
+
+---
+
+## 4. Oh javascript, please quit trying to be helpful
+
+If none of these rules are met, javascript "helpfully" binds `this` to the global scope
+
+	> WhatIsThis("oh no... oh no.");
+	< Window {top: Window, window: Window, ... }
+	> window.property1
+	< "oh no... oh no."
+
+Yeah... you don't want that to happen. Be careful out there.
+
+> Anonymous functions are bound to global by default. Keep this in mind if `this` suddenly isn't what you're expecting it to be.
+
+---
+
+## `this` is fluid. Use it.
+
+Since `this` can be set on-the-fly, some interesting patterns are possible that allow for alternatives (or close approximations of) OOP. For instance, try composing objects instead of trying to emulate OOP inhertiance.
+
+---
+
+## Recap
+
+
+
+</textarea>
+
+	<script src="lib/remark.min.js"></script>
 
 	<script>
+
+		var slideshow = remark.create();
 
 		var Federation = {
 			post: function(uri, pass, data, callback){

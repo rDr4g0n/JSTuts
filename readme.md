@@ -1,6 +1,5 @@
 Scope
 ---------------
-* js uses function scope, not block scope [scope.js]
 * example environment with bound variables [fnEnvironment.js]
 * a function that only accesses bound variables is a pure function
 	* guaranteed to always produce the same results, given the same input
