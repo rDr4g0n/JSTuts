@@ -12,7 +12,7 @@
 		.remark-slide-content { background-color: white; color: #424242; padding-top: 45px !important; }
 		code { background-color: #E9E9E9; padding: 0 4px; border-radius: 3px;}
 		h2 { color: white; position: absolute; top: -10px; left: 0; margin: 0; background-color: #3299BB; width: 100%; font-size: 2em; height: 42px;
-			-webkit-transform: rotate(-1deg); text-shadow: 2px 2px 0 #3299BB;
+			-webkit-transform: rotate(-1deg);
 		}
 		h2 code { color: #424242; }
 	</style>
@@ -444,6 +444,8 @@ Yeah... you don't want that to happen. Be careful out there.
 
 Since `this` can be set on-the-fly, some interesting patterns are possible that allow for alternatives (or close approximations of) OOP. For instance, try composing objects instead of trying to emulate OOP inhertiance.
 
+Take a look at `Federation.shipBuilder()` on this page to see some examples of using `this` instead of OOP style classes.
+
 ---
 
 ## Recap
@@ -453,11 +455,25 @@ Since `this` can be set on-the-fly, some interesting patterns are possible that 
 	* with `call()` or `apply()`
 	* by calling a function from an object
 	* by defaulting to global
+* Don't try to shoehorn OOP into javascript. Embrace the weirdness.
+* Use `this`. It's flexible for a reason.
+
+---
+
+class: center, middle
+
+## YOU MAED IT!
+
+### https://github.com/rDr4g0n/JSTuts
+#### https://leanpub.com/javascript-allonge
+#### http://effectivejs.com/
+#### https://github.com/getify/You-Dont-Know-JS
+
 
 
 </textarea>
 
-	<script src="lib/remark.min.js"></script>z
+	<script src="lib/remark.min.js"></script>
 
 	<script>
 
