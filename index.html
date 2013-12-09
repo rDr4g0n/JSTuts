@@ -4,9 +4,17 @@
 	<title>JavaScript: It's not OOP</title>
 	<meta charset="utf-8">
 	<style>
-		body { font-size: 1.4em; font-family: arial;}
-		blockquote { margin: 20px; border: solid gray 2px; font-size: .9em; color: #666; }
+		body { font-size: 1.4em; font-family: arial; }
+		blockquote { margin: 20px; padding: 5px; border-radius: 5px; font-size: .8em; color: #666; background-color: #E9E9E9;}
 		blockquote p { margin: 10px;}
+		.tiny { font-size: .6em; }
+		.remark-container { background-color: #FF9900; }
+		.remark-slide-content { background-color: white; color: #424242; padding-top: 45px !important; }
+		code { background-color: #E9E9E9; padding: 0 4px; border-radius: 3px;}
+		h2 { color: white; position: absolute; top: -10px; left: 0; margin: 0; background-color: #3299BB; width: 100%; font-size: 2em; height: 42px;
+			-webkit-transform: rotate(-1deg); text-shadow: 2px 2px 0 #3299BB;
+		}
+		h2 code { color: #424242; }
 	</style>
 </head>
 <body>
@@ -17,8 +25,7 @@
 
 class: center, middle
 
-# JavaScript: It's not OOP
-It's programming with objects
+background-image: url(title.png)
 
 ---
 
@@ -40,7 +47,9 @@ The environment of this function call can be rougly represented as:
 		b: 4
 	}
 
-**This is a pure function because all of its variables are defined (or bound) inside of the function's environment.**
+**This is a pure function* because all of its variables are defined (or bound) inside of the function's environment.**
+
+.tiny[*Technically pure functions also produce no side effects, but for this presentation the looser definition is fine.]
 
 ---
 
@@ -52,6 +61,8 @@ Keeping everything inside of the function environment has a lot of benefits.
 * Easy to test
 * Very portable/reusable
 * Ideal utility functions
+
+.center[![](1.png)]
 
 However, it's not really reasonable to only write pure functions in javascript, but its a good goal to strive towards!
 
@@ -162,7 +173,7 @@ Because *async*, that's why (hoping you guys already know what's up with async v
 
 Well here's where I was going with this. `postLog()` was done. gone. finished. closed. ex-parrot. Yet somehow the callback function, `onComplete()`, magically had access to `postLog()`'s `username` and `uri`. But, but, you might say, those vars should have closed along with `postLog()`!
 
-**`onComplete` *closed over* `postLog`'s function environment, thus keeping it alive after execution ended.** `onComplete`'s' environment could be represented like this:
+**`onComplete()` *closed over* `postLog()`'s function environment, thus keeping it alive after execution ended.** `onComplete()`'s' environment could be represented like this:
 
 	__onCompleteEnvironment__: {
 		__closured__postLogEnvironment__: {
@@ -178,7 +189,7 @@ It keeps a copy of its enclosing environment, thus it always has access to the v
 
 ---
 
-## I guess... can you make it more complex please?
+## Can you make it more complex please?
 
 Yes. Yes I can.
 
@@ -298,9 +309,11 @@ The function that `bindCredentials()` returns has access to `uri` and `pass`, bu
 * Pure functions have all of their vars bound in the current functions environment
 * Pure functions are portable and easy to test, but not too flexible.
 
+.center[![](5.png)]
+
 #### Closure functions
 * Accessing a var outside of the current function environment creates a closure
-* Closures are highly flexible and useful, but can be more challenging to use and test
+* Closures are highly flexible and useful, but can be more challenging to debug and test
 * A closure's scope is determined by where it is defined, not where it is called.
 * A closure keeps any parent scope it needs access to alive, even when that parent function has closed.
 
@@ -312,7 +325,7 @@ class: center, middle, crazyTime
 
 ---
 
-## Let's talk about `this` ba-by. Let's talk about you-and-me.
+## It's like `this` and like that
 
 Unlike a closure environment, the `this` context is determined by *how* a function is called. Here are the 4 ways `this` is set:
 
@@ -326,6 +339,8 @@ Unlike a closure environment, the `this` context is determined by *how* a functi
 4. otherwise `this` is bound to global
 
 Here, take my hand. Let's go over each scenario.
+
+.center[![](2.png)]
 
 ---
 
@@ -377,7 +392,7 @@ There are 3 ways to invoke a function in javascript:
 	WhatIsThis.call();
 	WhatIsThis.apply();
 
-`call` and `apply` are very similar, so let's look at `call`. The first argument `call` takes sets the `this` value of the function being called. Any subsequent arguments are passed to the calling function as parameters. 
+`call` and `apply` are very similar, but we're going to look at `call`. The first argument `call` takes sets the `this` value of the function being called. Any subsequent arguments are passed to the calling function as parameters. 
 
 We can pass in any object (including functions) to set as `this`:
 
@@ -402,11 +417,13 @@ Functions can be assigned to objects, which effectively make them methods of tha
 	> letsTryThis.WhatIsThis("SOMETHING TO SEE HERE!");
 	< WhatIsThis {property1: "SOMETHING TO SEE HERE!"}
 
-This should be the most familiar to devs coming from other languages. 
+This should be the most familiar to devs coming from other languages.
+
+.center[![](3.png)]
 
 ---
 
-## 4. Oh javascript, please quit trying to be helpful
+## 4. Oh javascript, please stop.
 
 If none of these rules are met, javascript "helpfully" binds `this` to the global scope
 
@@ -416,6 +433,8 @@ If none of these rules are met, javascript "helpfully" binds `this` to the globa
 	< "oh no... oh no."
 
 Yeah... you don't want that to happen. Be careful out there.
+
+.center[![](4.png)]
 
 > Anonymous functions are bound to global by default. Keep this in mind if `this` suddenly isn't what you're expecting it to be.
 
@@ -429,11 +448,16 @@ Since `this` can be set on-the-fly, some interesting patterns are possible that 
 
 ## Recap
 
+* `this` can be set in 4 different ways:
+	* with the `new` keyword
+	* with `call()` or `apply()`
+	* by calling a function from an object
+	* by defaulting to global
 
 
 </textarea>
 
-	<script src="lib/remark.min.js"></script>
+	<script src="lib/remark.min.js"></script>z
 
 	<script>
 
