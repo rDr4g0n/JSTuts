@@ -26,7 +26,7 @@
 
 class: center, middle
 
-background-image: url(title.png)
+background-image: url(assets/title.png)
 
 ---
 
@@ -63,7 +63,7 @@ Keeping everything inside of the function environment has a lot of benefits.
 * Very portable/reusable
 * Ideal utility functions
 
-.center[![](1.png)]
+.center[![](assets/1.png)]
 
 However, it's not really reasonable to only write pure functions in javascript, but its a good goal to strive towards!
 
@@ -310,7 +310,7 @@ The function that `bindCredentials()` returns has access to `uri` and `pass`, bu
 * Pure functions have all of their vars bound in the current functions environment
 * Pure functions are portable and easy to test, but not too flexible.
 
-.center[![](5.png)]
+.center[![](assets/5.png)]
 
 #### Closure functions
 * Accessing a var outside of the current function environment creates a closure
@@ -341,7 +341,7 @@ Unlike a closure environment, the `this` context is determined by *how* a functi
 
 Here, take my hand. Let's go over each scenario.
 
-.center[![](2.png)]
+.center[![](assets/2.png)]
 
 ---
 
@@ -420,7 +420,7 @@ Functions can be assigned to objects, which effectively make them methods of tha
 
 This should be the most familiar to devs coming from other languages.
 
-.center[![](3.png)]
+.center[![](assets/3.png)]
 
 ---
 
@@ -435,7 +435,7 @@ If none of these rules are met, javascript "helpfully" binds `this` to the globa
 
 Yeah... you don't want that to happen. Be careful out there.
 
-.center[![](4.png)]
+.center[![](assets/4.png)]
 
 > Anonymous functions are bound to global by default. Keep this in mind if `this` suddenly isn't what you're expecting it to be.
 
