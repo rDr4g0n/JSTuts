@@ -9,6 +9,7 @@
 		blockquote p { margin: 10px;}
 		.tiny { font-size: .6em; }
 		.remark-container { background-color: #3299BB; }
+		.remark-container.dark { background-color: black; }
 		.remark-slide-content { background-color: white; color: #424242; padding-top: 45px !important; }
 		code { background-color: #E9E9E9; padding: 0 4px; border-radius: 3px;}
 		h2 { color: white; position: absolute; top: -10px; left: 0; margin: 0; background-color: #FF9900; width: 100%; font-size: 2em; height: 42px; letter-spacing: -2px;
@@ -473,22 +474,8 @@ class: center, middle
 
 </textarea>
 
-	<script src="lib/remark.min.js"></script>
-
+	<!-- take a look here for some interesting stuff! -->
 	<script>
-
-		var slideshow = remark.create({
-		  highlightLanguage: 'javascript',
-		  highlightStyle: 'monokai'
-		});
-
-		setInterval(function(){
-			var el = document.querySelector(".crazyTime"),
-				randomColor = "#"+Math.floor(Math.random()*16777215).toString(16);
-			if(el){
-				el.style.backgroundColor = randomColor;
-			}
-		}, 100);
 
 		var Federation = {
 			post: function(uri, pass, data, callback){
@@ -533,7 +520,8 @@ class: center, middle
 
 					Federation.Starship.registry = Federation.Starship.registry || [];
 					Federation.Starship.registry.push(this);
-				}
+				},
+				modules: {}
 			}
 		};
 
@@ -607,6 +595,43 @@ class: center, middle
 		// console.log(myCrappyShip);
 
 	</script>
+
+
+
+	<!-- everything below is boring -->
+	<script src="lib/remark.min.js"></script>
+
+	<script>
+
+		var slideshow = remark.create({
+		  highlightLanguage: 'javascript',
+		  highlightStyle: 'monokai'
+		});
+		
+		var INTERMISSION = 16;
+
+		slideshow.on("showSlide", function(slide){
+			if(slide.getSlideNo() === INTERMISSION){
+				document.querySelector("body.remark-container").classList.add("dark");
+			}
+		});
+		slideshow.on("hideSlide", function(slide){
+			if(slide.getSlideNo() === INTERMISSION){
+				document.querySelector("body.remark-container").classList.remove("dark");
+			}
+		});
+
+		setInterval(function(){
+			var el = document.querySelector(".crazyTime"),
+				randomColor = "#"+Math.floor(Math.random()*16777215).toString(16);
+			if(el){
+				el.style.backgroundColor = randomColor;
+			}
+		}, 100);
+
+	</script>
+
+
 
 
 </body>
