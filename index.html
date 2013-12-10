@@ -8,10 +8,10 @@
 		blockquote { margin: 20px; padding: 5px; border-radius: 5px; font-size: .8em; color: #666; background-color: #E9E9E9;}
 		blockquote p { margin: 10px;}
 		.tiny { font-size: .6em; }
-		.remark-container { background-color: #FF9900; }
+		.remark-container { background-color: #3299BB; }
 		.remark-slide-content { background-color: white; color: #424242; padding-top: 45px !important; }
 		code { background-color: #E9E9E9; padding: 0 4px; border-radius: 3px;}
-		h2 { color: white; position: absolute; top: -10px; left: 0; margin: 0; background-color: #3299BB; width: 100%; font-size: 2em; height: 42px;
+		h2 { color: white; position: absolute; top: -10px; left: 0; margin: 0; background-color: #FF9900; width: 100%; font-size: 2em; height: 42px; letter-spacing: -2px;
 			-webkit-transform: rotate(-1deg);
 		}
 		h2 code { color: #424242; }
@@ -151,7 +151,7 @@ Let's assume Federation.post() is an async function that posts to some REST API 
 
 ---
 
-## Welcome to the Federation
+## Ya know what async is, right?
 
 	// not the nicest interface :/
 	postLog("jkirk", "OhuraOhYes",
@@ -270,7 +270,7 @@ Closures can be used to access a function's environment from outside of the func
 
 		ninjaFunction = function(){
 			return secret;
-		}
+		};
 
 	}
 
@@ -412,7 +412,7 @@ Functions can be assigned to objects, which effectively make them methods of tha
 
 	> var letsTryThis = {
 		  property1: "nothing to see here",
-		  whatIsThis: whatIsThis
+		  WhatIsThis: WhatIsThis
 	  };
 	> letsTryThis.WhatIsThis("SOMETHING TO SEE HERE!");
 	< WhatIsThis {property1: "SOMETHING TO SEE HERE!"}
@@ -444,7 +444,7 @@ Yeah... you don't want that to happen. Be careful out there.
 
 Since `this` can be set on-the-fly, some interesting patterns are possible that allow for alternatives (or close approximations of) OOP. For instance, try composing objects instead of trying to emulate OOP inhertiance.
 
-Take a look at `Federation.shipBuilder()` on this page to see some examples of using `this` instead of OOP style classes.
+Take a look at `Federation.starship.BaseStarship()` and `Federation.starship.modules` on this page to see some examples of using `this` to compose objects (also called mix-ins).
 
 ---
 
@@ -501,6 +501,39 @@ class: center, middle
 				setTimeout(function(){
 					callback( Math.round(Math.random()*100) );
 				}, Math.random()*5000);
+			},
+
+			// create a new starship
+			starship: {
+				BaseStarship: function(name){
+					this.name = name;
+					this.class = "Tadpole";
+					this.modules = [];
+
+					// easy way to apply a module to this
+					this.installModule = function(module){
+						var args = Array.prototype.slice.call(arguments, 1);
+						module.apply(this, args);
+					};
+
+					// base engine maxes out at 10 units of power
+					this.powerCapacity = 10;
+
+					// the base ship can go forward and backwards
+					// and thats really about it...
+					this.propulsion = {
+						goForward: function(){ /* do stuff */ },
+						goBackward: function(){ /* do stuff */ }
+					};
+
+					// goto x,y,z
+					this.navigation = {
+						navigateTo: function(vector){ /* do stuff */ }
+					};
+
+					Federation.Starship.registry = Federation.Starship.registry || [];
+					Federation.Starship.registry.push(this);
+				}
 			}
 		};
 
@@ -508,7 +541,70 @@ class: center, middle
 			mockSpock: function(){},
 			pickUpAlienLadies: function(){},
 			hitOnOhura: function(){}
+		};		
+
+		// sure its easy to set an arbitrary power value
+		// but you need enough space to accommodate the
+		// more powerful engine... plus money...
+		Federation.starship.modules.powerBoost = function(cap){
+			this.powerCapacity = cap;
+
+			// ship class is designated by power
+			// capacity
+			if(cap <= 10){
+				this.class = "Tadpole";
+			} else if(cap > 10){
+				this.class = "Scrapper";
+			} else if(cap > 100){
+				this.class = "Contender";
+			} else if(cap > 1000){
+				this.class = "Bruiser";
+			}
+
+			this.modules.push("Power Boost: " + cap);
 		};
+
+		// installs google maps
+		Federation.starship.modules.advancedNavigationPackage = function(){
+			this.navigation.navigateByName = function(name){
+				// convert name to vector
+				this.navigation.navigateTo(vector);
+			};
+
+			this.modules.push("Advanced Navigation Package");
+		};
+
+		Federation.starship.modules.agilePropulsionPackage = function(){
+			this.propulsion.goLeft = function(){ /* do stuff */ };
+			this.propulsion.goRight = function(){ /* do stuff */ };
+			this.propulsion.goUp = function(){ /* do stuff */ };
+			this.propulsion.goDown = function(){ /* do stuff */ };
+
+			this.modules.push("Agile Propulsion Package");
+		};
+
+		Federation.starship.modules.photonWeaponSystem = function(maxCharge){
+			if(this.powerCapacity < maxCharge * 3){
+				throw "Engine inadequate for max charge capacity.";
+			}
+
+			// if no weapons are installed, define weaponSystems
+			this.weaponSystems = this.weaponSystems || {};
+
+			this.weaponSystems.photon = {};
+			this.weaponSystems.photon.fire = function(){ /* do stuff */ };
+			this.weaponSystems.photon.recharge = function(){ /* do stuff */ };
+			this.weaponSystems.photon.charge = 0;
+			this.weaponSystems.photon.maxCharge = maxCharge;
+
+			this.modules.push("Photon Weapon System: " + maxCharge);
+		};
+
+		// create and configure a new ship
+		// var myCrappyShip = new Federation.Starship.BaseStarship("USS CrapCan");
+		// Federation.Starship.modules.advancedNavigationPackage.call(myCrappyShip);
+		// myCrappyShip.installModule(Federation.Starship.modules.powerBoost, 12);
+		// console.log(myCrappyShip);
 
 	</script>
 
